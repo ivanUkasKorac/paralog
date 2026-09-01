@@ -1,0 +1,82 @@
+{
+  "version": "2.0",
+  "created_at": "2026-06-22T00:00:00Z",
+  "description": "Scenarij napada za okruženje attackrange.local. Mimikatz DCSync napad izvršen nakon uspješne autentikacije administratorskog računa na domain controlleru.",
+  "topology": "network_topology.json",
+  "start_time": "2026-08-26T10:00:00Z",
+  "attacks": [
+    {
+      "id": 0,
+      "name": "CrackMapExec credential stuffing attack",
+      "technique": "T1110.004",
+      "description": "Napadač koristi alat crackmapexec kako bi pokušao credential stuffing-om se prijaviti na jedan od urađaja.",
+      "template": "credential_stuffing_template.json",
+      "time_offset_ms": 0,
+      "machine_map": {
+        "target0": "DC",
+        "target1": "PC2",
+        "target2": "PC1",
+        "attacker": "Evil"
+      }
+    },
+    {
+      "id": 1,
+      "name": "RDP session established",
+      "technique": "T1021.001",
+      "description": "Napadač koristi otkrivene vjerodajnice za autentikaciju na PC1 (lokalni korisnik) putem RDP protokola.",
+      "template": "rdp_session_established_template.json",
+      "time_offset_ms": 50000,
+      "machine_map": {
+        "target": "PC1",
+        "attacker": "Evil"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Poweshell file download",
+      "technique": "T1563.002",
+      "description": "Preuzimanje datoteke za eskalaciju privilegija koristeći Powershell.",
+      "template": "powershell_file_download_template.json",
+      "time_offset_ms": 54000,
+      "machine_map": {
+        "target": "PC1",
+        "attacker": "Evil"
+      }
+    },
+    {
+      "id": 3,
+      "name": "RedSun privilege escalation",
+      "technique": "T1068",
+      "description": "Korištenje RedSun ranjivosti za eskalaciju privilegija s lokalnih na SYSTEM prava.",
+      "template": "RedSun_template.json",
+      "time_offset_ms": 60000,
+      "machine_map": {
+        "target": "PC1"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Mimikatz DCSync napad",
+      "technique": "T1003.006",
+      "description": "Napadač koristi ukradene administratorske vjerodajnice koje je pronašao u korisničkom administrativnom direktoriju za autentikaciju na domain controlleru putem Kerberosa, nakon čega izvršava DCSync replikacijske zahtjeve kako bi izvukao hash lozinke korisničkih računa.",
+      "template": "mimikatz_template.json",
+      "time_offset_ms": 70000,
+      "machine_map": {
+        "target": "DC",
+        "attacker": "Evil"
+      }
+    },
+    {
+      "id": 5,
+      "name": "Mimikatz DCSync napad 2",
+      "technique": "T1003.006",
+      "description": "Napadač s kompromitiranog računala koristi ukradene administratorske vjerodajnice za autentikaciju na domain controlleru putem Kerberosa, nakon čega izvršava AD enumeraciju i DCSync replikacijske zahtjeve kako bi izvukao hash lozinke korisničkih računa uključujući krbtgt.",
+      "template": "mimikatz_template.json",
+      "time_offset_ms": 80000000,
+      "machine_map": {
+        "target": "DC",
+        "attacker": "Evil"
+      }
+    }
+  ]
+}

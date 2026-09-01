@@ -1,0 +1,207 @@
+{
+  "version": "6.0",
+  "created_at": "2026-06-22T00:00:00Z",
+  "description": "Topologija mreže okruženja attackrange.local. Ključevi polja odgovaraju tekstu placeholdera iz predloška, bez dijela koji označava stroj/vezu (taj dio je već poznat iz strukture - koji je dictionary). Polja intrinzična stroju ostaju ravna (flat); polja koja su artefakt određene tehnike napada nalaze se u per_template, ključano po imenu predloška koji ih koristi.",
+  "machines": [
+    {
+      "name": "DC",
+      "COMPUTERNAME": "DC01",
+      "IPv4": "198.168.10.10",
+      "domain": {
+        "DOMAINSUFFIX": "local",
+        "DSAGUID": "71236eba-fac9-40fb-8f23-ac9361168d6f",
+        "USERDNSDOMAIN": "soclab.local",
+        "USERDOMAIN": "SOCLAB"
+      },
+      "objects": {   
+        "OBJECTGUID:COMPUTER_ATTRIBUTES": "%{94d92973-5ce1-4126-87d3-e2efaa3ceaec}",
+        "OBJECTGUID:CONTAINER": "%{1450c195-d3e8-4d18-9177-488c0cbd28b0}",
+        "OBJECTGUID:ORG_UNIT": "%{9bee3c74-f029-40c6-bc2d-e36b11b6d229}",
+        "OBJECTGUID:REPLICATION": "%{c5f5fdb6-ac1c-4ac8-a79c-fcb2457875ee}",
+        "OBJECTGUID:USER_ATTRIBUTES": "%{bb4e5e73-93da-48d8-bcc5-0417aa1441da}"
+      },
+      "users": [
+        {
+          "USERNAME:ADMIN": "Administrator",
+          "USERSID:ADMIN": "S-1-5-21-2847619031-1574426088-3901172546-500"
+        }
+      ],
+      "event_objects":{
+          "EVENTRECORDID+GSEQ(WinEventLog:Directory Service)": "890",
+          "EVENTRECORDID+GSEQ(XmlWinEventLog:Security)": "151053"
+      },
+      "per_template": {
+        "CrackMapExec credential stuffing attack": {
+          "ACTIVITYID:ATTEMPT1": "{0419bf2b-0e26-4d69-ad7c-856c1854a777}",
+          "ACTIVITYID:ATTEMPT2": "{e2e6026e-0105-4f62-b293-9c41b147d7e5}"
+        },
+        "Mimikatz DCSync napad": {
+          "ACTIVITYID": "{25ee44aa-914b-4fa4-96cf-d7dc893d111b}",
+          "AUTHENTICATIONPACKAGENAME": "Kerberos",
+          "KEYLENGTH": "0",
+          "LMPACKAGENAME": "-",
+          "LOGONGUID": "{E7EC0E10-225C-1808-80D8-C373E71EA0E2}",
+          "LOGONID": "0x31325a",
+          "LOGONPROCESSNAME": "Kerberos",
+          "LOGONTYPE": "3",
+          "RESTRICTEDADMINMODE": "-",
+          "TRANSMITTEDSERVICES:S4ULOGON": "-",
+          "USERNAME:NEWCREDENTIALS_LOGON": "-",
+          "USERDOMAIN:NEWCREDENTIALS_LOGON": "-",
+          "VIRTUALACCOUNT": "%%1843"
+        },
+        "Mimikatz DCSync napad 2": {
+          "ACTIVITYID": "{ba1ed1fe-9cb7-4317-a130-c86356f523d4}",
+          "AUTHENTICATIONPACKAGENAME": "Kerberos",
+          "KEYLENGTH": "0",
+          "LMPACKAGENAME": "-",
+          "LOGONGUID": "{A94F2C71-6B3D-4E19-91A7-5C82D0F14B36}",
+          "LOGONID": "0x1b84ebe2",
+          "LOGONPROCESSNAME": "Kerberos",
+          "LOGONTYPE": "3",
+          "RESTRICTEDADMINMODE": "-",
+          "TRANSMITTEDSERVICES:S4ULOGON": "-",
+          "USERNAME:NEWCREDENTIALS_LOGON": "-",
+          "USERDOMAIN:NEWCREDENTIALS_LOGON": "-",
+          "VIRTUALACCOUNT": "%%1843"
+        }
+      }
+    },
+    {
+      "name": "PC1",
+      "COMPUTERNAME": "WIN10-CLIENT1",
+      "IPv4": "198.168.10.21",
+      "domain": {
+        "USERDOMAIN": "SOCLAB",
+        "USERDNSDOMAIN": "soclab.local"
+      },
+      "session_objects": {
+          "LOGONGUID": "AC4C5E18-461D-678E-E703-000000000000",
+          "LOGONID": "0x194c16b1",
+          "TERMINALSESSIONID": "2",
+          "TOKENELEVATIONTYPE": "%%1936",
+          "INTEGRITYLEVEL": "Medium",
+          "ELEVATEDTOKEN": "%%1842",
+          "IMPERSONATIONLEVEL": "%%1833",
+          "KEYLENGTH": "0",
+          "LINKEDLOGONID": "0x0",
+          "LMPACKAGENAME": "-",
+          "AUTHENTICATIONPACKAGENAME": "Negotiate",
+          "RESTRICTEDADMINMODE": "%%1843"
+      },
+      "users": [
+        {
+          "USERNAME:LOCAL": "akovacic",
+          "USERSID:LOCAL": "S-1-5-21-918273645-1928374650-564738291-1001"
+        }
+      ],
+      "file_objects":{
+        "DIRECTORY:TEMP": "C:\\Users\\akovacic\\AppData\\Local\\Temp\\",
+        "FILEVERSION:POWERSHELL": "10.0.26100.8972 (WinBuild.160101.0800)",
+        "IMPHASH:POWERSHELL": "afacf6dc9041114b198160aab4d0ae77",
+        "MD5HASH:POWERSHELL": "E65ECCA3754249C00F50A035202F7591",
+        "SHA256HASH:POWERSHELL": "7600FFE12DA441FE89D035B13801E8E91D064BC544A27B19A5CF49F6AB8B18F5",
+        "FILEVERSION:CMD": "10.0.26100.1 (WinBuild.160101.0800)",
+        "FILEVERSION:MDEFENDER": "4.18.26070.9-0",
+        "IMPHASH:CMD": "010b165e4c37f484601d3dbd700c9423",
+        "MD5HASH:CMD": "E463E36104D22A2479046A7D4F620816",
+        "SHA256HASH:CMD": "8DD1EBB0B969370C70A5EE7F7EE347949AA7046AA5E1A33FCD7B1E9415B21FC3"
+      },
+      "event_objects":{
+        "EVENTRECORDID+GSEQ(XmlWinEventLog:Security)": 12312,
+        "EVENTRECORDID+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)": 591780,
+        "EVENTRECORDID+GSEQ(WinEventLog:Security)": 547179
+      },
+      "per_template": {
+        "CrackMapExec credential stuffing attack": {
+          "ACTIVITYID:ATTEMPT1": "{cfe228e5-7370-436a-8c4a-0814453b2801}",
+          "ACTIVITYID:ATTEMPT2": "{02dd187b-e65f-45d0-8dd1-8a51479d90ff}"
+        },
+        "Poweshell file download":{
+          "DIRECTORY:EXECUTION": "C:\\Users\\akovacic\\Desktop\\",
+          "FILENAME:EXPLOIT": "RedSun.exe",
+          "PROCESSGUID:POWERSHELL": "{AC4C5E18-871D-638E-E043-000000000F00}",
+          "PROCESSGUID:POWERSHELL_PARENT": "{AC4C5E18-76AF-695B-1958-000000000F00}",
+          "RULENAME": "-"
+        },
+        "RDP session established":{
+          "ACTIVITYID": "{9d78b60c-a678-47be-a80c-643fc6ee4a34}",
+          "DIRECTORY:SERVICE": "",
+          "FILENAME:SERVICE": "-",
+          "PID:SERVICE": "0x0",
+          "TRANSMITTEDSERVICES": "-",
+          "LOGONID:": "0x0",
+          "USERNAME:": "-",
+          "USERDOMAIN:": "-",
+          "USERSID:": "NULL SID"
+        },
+        "RedSun privilege escalation":{
+          "FILENAME:EXPLOIT": "RedSun.exe",
+          "DIRECTORY:BINARY": "C:\\Users\\akovacic\\Desktop\\",
+          "PROCESSGUID:CMD": "AC4C5E18-72FA-69EB-1808-000000000F00",
+          "PROCESSGUID:REDSUN": "AC4C5E18-72CB-69EB-0D08-000000000F00",
+          "PROCESSGUID:SOURCEACCESS": "AC4C5E18-72EE-69EB-1108-000000000F00",
+          "PROCESSGUID:TARGETACCESS": "AC4C5E18-48A1-678E-0302-000000000F00",
+          "PROCESSGUID:TIERINGENGINESERVICE": "AC4C5E18-72FA-69EB-1708-000000000F00",
+          "RULENAME:REDSUN": "-"
+        }
+      }
+    },
+    {
+      "name": "PC2",
+      "COMPUTERNAME": "WIN10-CLIENT2",
+      "IPv4": "198.168.10.22",
+      "domain": {
+        "USERDOMAIN": "SOCLAB",
+        "USERDNSDOMAIN": "soclab.local"
+      },
+      "event_objects":{
+          "EVENTRECORDID+GSEQ(XmlWinEventLog:Security)": 1132
+      },
+      "per_template": {
+        "CrackMapExec credential stuffing attack": {
+          "ACTIVITYID:ATTEMPT1": "{4c886de9-a5b6-4fe4-89f3-96134bbbda9f}",
+          "ACTIVITYID:ATTEMPT2": "{de9d1bc3-6bf2-4857-a090-d5e3715b9884}"
+        }
+      }
+    },
+    {
+      "name": "Evil",
+      "COMPUTERNAME": "ATTACKER-KALI",
+      "IPv4": "203.0.113.50",
+      "per_template": {
+        "Mimikatz DCSync napad": {
+          "SRCPORT:LOGON_PORT": "50158",
+          "LOGONID:REMOTE_LOGIN": "0x0",
+          "USERNAME:REMOTE_LOGIN": "-",
+          "USERDOMAIN:REMOTE_LOGIN": "-",
+          "USERSID:REMOTE_LOGIN": "NULL SID"
+        },
+        "Mimikatz DCSync napad 2": {
+          "SRCPORT:LOGON_PORT": "50158",
+          "LOGONID:REMOTE_LOGIN": "0x0",
+          "USERNAME:REMOTE_LOGIN": "-",
+          "USERDOMAIN:REMOTE_LOGIN": "-",
+          "USERSID:REMOTE_LOGIN": "NULL SID"
+        },
+        "CrackMapExec credential stuffing attack": {
+          "SRCPORT:ENDPOINT0": "43314",
+          "SRCPORT:ENDPOINT1": "43315",
+          "SRCPORT:ENDPOINT2": "43296",
+          "USERNAME:ATTEMPT1": "npekar",
+          "USERNAME:ATTEMPT2": "akovacic"
+        },
+        "Poweshell file download":{
+          "REMOTELINK": "https://evilweb.com/exploit/RedSun.exe"
+        },
+        "RDP session established":{
+          "SRCPORT:LOGON": "36722",
+          "USERDOMAIN": "-",
+          "USERSID": "NULL SID",
+          "USERNAME": "-",
+          "LOGONID":"0x0"
+        }
+      }
+    }
+  ]
+}

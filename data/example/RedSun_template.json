@@ -1,0 +1,205 @@
+{
+  "template_name": "RedSun privilege escalation",
+  "technique": "T1068",
+  "description": "RedSun je napad lokalne eskalacije privilegija u sustavu Windows koji zloupotrebljava mehanizme Microsoft Defendera i Cloud Files sustava kako bi napadaču omogućio izvršavanje koda s ovlastima računa NT AUTHORITY\\SYSTEM.",
+  "version": "1.0",
+  "created_at": "2026-08-26T00:00:00Z",
+  "machines": ["target"],
+  "logs": [
+    {
+        "id": 0,
+        "description": "Sysmon događaj 10 na ciljanom računalu: vssvc.exe pristupa memoriji procesa MsMpEng.exe (Windows Defender), prikazuje interakciju shadow copy-a i Defendera koja je potrebna za RedSun.",
+        "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+        "hostname": "{{COMPUTERNAME:target}}",
+        "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>10</EventID><Version>3</Version><Level>4</Level><Task>10</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+13116}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>-</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME}}</Data><Data Name='SourceProcessGUID'>{{PROCESSGUID:target:SOURCEACCESS}}</Data><Data Name='SourceProcessId'>{{PID:target:SOURCEACCESS+RAND[100,65532,4]}}</Data><Data Name='SourceThreadId'>{{THREADID:target:SOURCEACCESS+RAND[100,65532,4]}}</Data><Data Name='SourceImage'>C:\\Windows\\system32\\vssvc.exe</Data><Data Name='TargetProcessGUID'>{{PROCESSGUID:target:TARGETACCESS}}</Data><Data Name='TargetProcessId'>{{PID:target:TARGETACCESS+RAND[100,65532,4]}}</Data><Data Name='TargetImage'>C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\{{FILEVERSION:target:MDEFENDER}}\\MsMpEng.exe</Data><Data Name='GrantedAccess'>0x1000</Data><Data Name='CallTrace'>C:\\Windows\\SYSTEM32\\ntdll.dll+9f234|C:\\Windows\\System32\\KERNELBASE.dll+3212e|C:\\Windows\\system32\\vssvc.exe+c75c3|C:\\Windows\\system32\\vssvc.exe+5d911|C:\\Windows\\system32\\vssvc.exe+5aa58|C:\\Windows\\system32\\vssvc.exe+47dd9|C:\\Windows\\system32\\vssvc.exe+48cd9|C:\\Windows\\system32\\vssvc.exe+47643|C:\\Windows\\System32\\combase.dll+8bb6c|C:\\Windows\\System32\\combase.dll+8b8f3|C:\\Windows\\System32\\combase.dll+d6697|C:\\Windows\\System32\\combase.dll+d6313|C:\\Windows\\System32\\combase.dll+5c880|C:\\Windows\\System32\\combase.dll+6b33e|C:\\Windows\\system32\\vssvc.exe+488e4|C:\\Windows\\system32\\vssvc.exe+49d0a|C:\\Windows\\system32\\vssvc.exe+4a239|C:\\Windows\\System32\\msvcrt.dll+3e634|C:\\Windows\\System32\\msvcrt.dll+3e70c|C:\\Windows\\System32\\KERNEL32.DLL+1244d|C:\\Windows\\SYSTEM32\\ntdll.dll+5df78</Data><Data Name='SourceUser'>NT AUTHORITY\\SYSTEM</Data><Data Name='TargetUser'>NT AUTHORITY\\SYSTEM</Data></EventData></Event>"
+    }, 
+    {
+        "id": 1,
+        "description": "Sysmon događaj 11 na ciljanom računalu: stvaranje ETL log Cloud datoteke od strane sumnjive izvršne datoteke (REDSUN), manipulacija Cloud API-em jer se time obnavlja exploit unutar Systen32 direktorija.",
+        "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+        "hostname": "{{COMPUTERNAME:target}}",
+        "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>11</EventID><Version>2</Version><Level>4</Level><Task>11</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+158416}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>{{RULENAME:target:REDSUN}}</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:REDSUN}}</Data><Data Name='ProcessId'>{{PID:target:REDSUN+RAND[100,65532,4]}}</Data><Data Name='Image'>{{DIRECTORY:target:BINARY}}{{FILENAME:target:EXPLOIT}}</Data><Data Name='TargetFilename'>C:\\Windows\\System32\\LogFiles\\CloudFiles\\CldFlt0.etl</Data><Data Name='CreationUtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='User'>{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}</Data></EventData></Event>"
+    },
+    {
+        "id": 2,
+        "description": "Sysmon događaj 1 na ciljanom računalu: pokretanje cmd.exe procesa od strane TieringEngineService.exe pod SYSTEM kontekstom, dokaz da je uspješno obnovljen exploit i pokrenut naredbeni redak.",
+        "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
+        "hostname": "{{COMPUTERNAME:target}}",
+        "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>1</EventID><Version>5</Version><Level>4</Level><Task>1</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+760897}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>-</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+755000}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:CMD}}</Data><Data Name='ProcessId'>{{PID:target:CMD+RAND[100,65532,4]}}</Data><Data Name='Image'>C:\\Windows\\System32\\cmd.exe</Data><Data Name='FileVersion'>{{FILEVERSION:target:CMD}}</Data><Data Name='Description'>Windows Command Processor</Data><Data Name='Product'>Microsoft® Windows® Operating System</Data><Data Name='Company'>Microsoft Corporation</Data><Data Name='OriginalFileName'>Cmd.Exe</Data><Data Name='CommandLine'>C:\\Windows\\System32\\cmd.exe</Data><Data Name='CurrentDirectory'>C:\\Windows\\system32\\</Data><Data Name='User'>NT AUTHORITY\\SYSTEM</Data><Data Name='LogonGuid'>{{LOGONGUID:target}}</Data><Data Name='LogonId'>{{LOGONID:target}}</Data><Data Name='TerminalSessionId'>{{TERMINALSESSIONID:target}}</Data><Data Name='IntegrityLevel'>System</Data><Data Name='Hashes'>MD5={{MD5HASH:target:CMD}},SHA256={{SHA256HASH:target:CMD}},IMPHASH={{IMPHASH:target:CMD}}</Data><Data Name='ParentProcessGuid'>{{PROCESSGUID:target:TIERINGENGINESERVICE}}</Data><Data Name='ParentProcessId'>{{PID:target:TIERINGENGINESERVICE+RAND[100,65532,4]}}</Data><Data Name='ParentImage'>C:\\Windows\\System32\\TieringEngineService.exe</Data><Data Name='ParentCommandLine'>C:\\Windows\\system32\\TieringEngineService.exe</Data><Data Name='ParentUser'>NT AUTHORITY\\SYSTEM</Data></EventData></Event>"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "Computer",
+      "description": "Naziv hosta računala koje je generiralo Windows Security/Sysmon događaje.",
+      "placeholders": [
+        "{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "CreationUtcTime",
+      "description": "Vremenaska vrijednost stvaranja datoteke po onome što piše u njenim metapodatcima.",
+      "placeholders": [
+        "{{TIMESTAMP:UTCTIME+OFFSET}}"
+      ]
+    },
+    {
+      "name": "EventRecordID",
+      "description": "ID događaja, automatski raste za svaku pojavu unutar scenarija (+GSEQ) za svaki kanal zapisa, počevši od bazne vrijednosti iz topologije.",
+      "placeholders": [
+        "{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}"
+      ]
+    },
+    {
+      "name": "FileVersion",
+      "description": "Podaci o verziji pokrenute izvršne datoteke.",
+      "placeholders": [
+        "{{FILEVERSION:target:CMD}}"
+      ]
+    },
+    {
+      "name": "Hashes",
+      "description": "Kriptografski sažetak (MD5, SHA256 i IMPHASH) izvršne datoteke koja je pokrenuta.",
+      "placeholders": [
+        "MD5={{MD5HASH:target:CMD}},SHA256={{SHA256HASH:target:CMD}},IMPHASH={{IMPHASH:target:CMD}}"
+      ]
+    },
+    {
+      "name": "Image",
+      "description": "Putanja binary datoteke koja izvršava napad. (sadrži i ime datoteke)",
+      "placeholders": [
+        "{{DIRECTORY:target:BINARY}}{{FILENAME:target:EXPLOIT}}"
+      ]
+    },
+    {
+      "name": "LogonGuid",
+      "description": "GUID koji jedinstveno identificira logon sesiju. Isti GUID pojavljuje se u logovima iz iste sesije.",
+      "placeholders": [
+        "{{LOGONGUID:target}}"
+      ]
+    },
+    {
+      "name": "LogonId",
+      "description": "Hexadecimalni ID logon sesije.",
+      "placeholders": [
+        "{{LOGONID:target}}"
+      ]
+    },
+    {
+      "name": "ParentProcessGuid",
+      "description": "Sysmon GUID nadređenog procesa (POWERSHELL) za Sysmon logove. Isti GUID kroz sve logove koji dijele istu roditeljsku sesiju.",
+      "placeholders": [
+        "{{PROCESSGUID:target:TIERINGENGINESERVICE}}"
+      ]
+    },
+    {
+      "name": "ParentProcessId",
+      "description": "PID nadređenog procesa koji je pokrenuo naredbu.",
+      "placeholders": [
+        "{{PID:target:TIERINGENGINESERVICE+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "ProcessGuid",
+      "description": "Sysmon GUID koji jedinstveno identificira svaku instancu novonastalog procesa, dinamički generiran.",
+      "placeholders": [
+        "{{PROCESSGUID:target:REDSUN}}",
+        "{{PROCESSGUID:target:CMD}}"
+      ]
+    },
+    {
+      "name": "ProcessId",
+      "description": "Za Sysmon evente označava PID novo kreiranog procesa. Dinamički dodijeljen po izvršavanju.",
+      "placeholders": [
+        "{{PID:target:REDSUN+RAND[100,65532,4]}}",
+        "{{PID:target:CMD+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "ProcessID",
+      "description": "ProcessID stvaranja samog zapisa u Execution elementu.",
+      "placeholders": [
+        "{{PID:target:EVENT_PID+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "RuleName",
+      "description": "Polje koje se popuni kada Sysmon ima posebnu konfiguraciju koja se zbog napada aktivira.",
+      "placeholders": [
+        "{{RULENAME:target:REDSUN}}"
+      ]
+    },
+    {
+      "name": "SourceProcessGUID",
+      "description": "GUID procesa koji je pokrenuo pristup drugom procesu (event 10 Process access), dinamički generiran.",
+      "placeholders": [
+        "{{PROCESSGUID:target:SOURCEACCESS}}"
+      ]
+    },
+    {
+      "name": "SourceProcessId",
+      "description": "ID procesa koji je pokrenuo pristup drugom procesu (event 10 Process access), dinamički generiran.",
+      "placeholders": [
+        "{{PID:target:SOURCEACCESS+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "SourceThreadId",
+      "description": "ID dretve koja je pokrenula pristup drugom procesu (event 10 Process access), dinamički generiran.",
+      "placeholders": [
+        "{{THREADID:target:SOURCEACCESS+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "SystemTime / UtcTime",
+      "description": "Vremenska oznaka svakog događaja. Offset u mikrosekundama od baznog TIMESTAMP (log 0). UtcTime (Sysmon logovi) uvijek nosi isti offset kao TIMESTAMP za taj isti log, jer predstavljaju isti trenutak u dva različita formata.",
+      "placeholders": [
+        "{{TIMESTAMP:SYSTEMTIME+OFFSET}}",
+        "{{TIMESTAMP:UTCTIME}}",
+        "{{TIMESTAMP:UTCTIME+OFFSET}}"
+      ]
+    },
+    {
+      "name": "TargetProcessGUID",
+      "description": "GUID procesa kojem je pokrenut pristup od drugog procesa (event 10 Process access), dinamički generiran.",
+      "placeholders": [
+        "{{PROCESSGUID:target:TARGETACCESS}}"
+      ]
+    },
+    {
+      "name": "TargetProcessId",
+      "description": "ID procesa kojem je pokrenut pristup od drugog procesa (event 10 Process access), dinamički generiran.",
+      "placeholders": [
+        "{{PID:target:TARGETACCESS+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "TargetImage",
+      "description": "Putanja do izvršne datoteke čiji je proces pokrenut od strane drugog procesa (event 10 Process access). Moguća promjena verije u putanji.",
+      "placeholders": [
+        "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\{{FILEVERSION:target:MDEFENDER}}\\MsMpEng.exe"
+      ]
+    },
+    {
+      "name": "TerminalSessionId",
+      "description": "Identifikator sesije pod kojom je proces kreiran, za remote interactive je recimo najčešće 2.",
+      "placeholders": [
+        "{{TERMINALSESSIONID:target}}"
+      ]
+    },
+    {
+      "name": "ThreadID",
+      "description": "OS-dodijeljen thread identifier za kreiranje ovog zapisa. Isti je za ove Sysmon zapise.",
+      "placeholders": [
+        "{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}"
+      ]
+    }, 
+    {
+      "name": "User",
+      "description": "Korisnički račun pod kojim je proces pokrenut. (Radi se o lokalnom računu)",
+      "placeholders": [
+        "{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}"
+      ]
+    }
+  ]
+}

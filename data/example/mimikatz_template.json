@@ -1,0 +1,358 @@
+{
+  "template_name": "Mimikatz DCSync attack",
+  "technique": "T1003.006",
+  "description": "Izvršavanje mimikatz DCSync napada pomoću crackmapexec-a, potrebna administratorska prava",
+  "version": "8",
+  "created_at": "2026-08-25T19:38:38Z",
+  "machines": ["target", "attacker"],
+  "logs": [
+    {
+      "id": 0,
+      "description": "Uspješna mrežna prijava prije izvršavanja napada, ADMIN prava.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4624</EventID><Version>2</Version><Level>0</Level><Task>12544</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:LOGON+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:attacker:REMOTE_LOGIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:attacker:REMOTE_LOGIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:attacker:REMOTE_LOGIN}}</Data><Data Name='SubjectLogonId'>{{LOGONID:attacker:REMOTE_LOGIN}}</Data><Data Name='TargetUserSid'>{{USERDOMAIN:target}}\\{{USERNAME:target:ADMIN}}</Data><Data Name='TargetUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='TargetDomainName'>{{USERDNSDOMAIN:target}}</Data><Data Name='TargetLogonId'>{{LOGONID:target}}</Data><Data Name='LogonType'>{{LOGONTYPE:target}}</Data><Data Name='LogonProcessName'>{{LOGONPROCESSNAME:target}}</Data><Data Name='AuthenticationPackageName'>{{AUTHENTICATIONPACKAGENAME:target}}</Data><Data Name='WorkstationName'>{{COMPUTERNAME:attacker}}</Data><Data Name='LogonGuid'>{{LOGONGUID:target}}</Data><Data Name='TransmittedServices'>{{TRANSMITTEDSERVICES:target:S4ULOGON}}</Data><Data Name='LmPackageName'>{{LMPACKAGENAME:target}}</Data><Data Name='KeyLength'>{{KEYLENGTH:target}}</Data><Data Name='ProcessId'>0x0</Data><Data Name='ProcessName'>-</Data><Data Name='IpAddress'>{{IPv4:attacker}}</Data><Data Name='IpPort'>{{SRCPORT:attacker:LOGON_PORT}}</Data><Data Name='ImpersonationLevel'>%%1832</Data><Data Name='RestrictedAdminMode'>{{RESTRICTEDADMINMODE:target}}</Data><Data Name='TargetOutboundUserName'>{{USERNAME:target:NEWCREDENTIALS_LOGON}}</Data><Data Name='TargetOutboundDomainName'>{{USERDOMAIN:target:NEWCREDENTIALS_LOGON}}</Data><Data Name='VirtualAccount'>{{VIRTUALACCOUNT:target}}</Data><Data Name='TargetLinkedLogonId'>0x0</Data><Data Name='ElevatedToken'>%%1842</Data></EventData></Event>\n"
+    },
+    {
+      "id": 1,
+      "description": "Administrator je pročitao određene atribute (badPasswordTime, sAMAccountName, and userAccountControl) iz objekta Computer u AD-u.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+3151}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{bf967a86-0de6-11d0-a285-00aa003049e2}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:COMPUTER_ATTRIBUTES}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7684\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x10</Data><Data Name='Properties'>%%7684\r\n\t\t{59ba2f42-79a2-11d0-9020-00c04fc2d3cf}\r\n\t\t\t{bf967a00-0de6-11d0-a285-00aa003049e2}\r\n\t\t{e48d0154-bcf8-11d1-8702-00c04fb96050}\r\n\t\t\t{26d97369-6070-11d1-a9c6-0000f80367c1}\r\n\t\t{4c164200-20c0-11d0-a768-00aa006e0529}\r\n\t\t\t{bf967a68-0de6-11d0-a285-00aa003049e2}\r\n\t{bf967a86-0de6-11d0-a285-00aa003049e2}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 2,
+      "description": "Administrator je izlistao sadržaj organizacijske jedinice (Organizational Unit).",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+3231}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{bf967aa5-0de6-11d0-a285-00aa003049e2}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:ORG_UNIT}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7682\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x4</Data><Data Name='Properties'>%%7682\r\n\t{bf967aa5-0de6-11d0-a285-00aa003049e2}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 3,
+      "description": "Administrator je pročitao širi skup atributa iz istog objekta Computer kao i zapis 1, sada uključujući atribute sAMAccountName, sAMAccountType, userAccountControl i DNS hostname.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+3269}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>computer</Data><Data Name='ObjectName'>{{OBJECTGUID:target:COMPUTER_ATTRIBUTES}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7684\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x10</Data><Data Name='Properties'>%%7684\r\n\t{bf967a86-0de6-11d0-a285-00aa003049e2}\r\n\t\t{4c164200-20c0-11d0-a768-00aa006e0529}\r\n\t\t\t{bf967a68-0de6-11d0-a285-00aa003049e2}\r\n\t\t{59ba2f42-79a2-11d0-9020-00c04fc2d3cf}\r\n\t\t\t{3e0abfd0-126a-11d0-a060-00aa006c33ed}\r\n\t\t{771727b1-31b8-4cdf-ae62-4fe39fadf89e}\r\n\t\t\t{26d9736e-6070-11d1-a9c6-0000f80367c1}\r\n\t\t{72e39547-7b18-11d1-adef-00c04fd8d5cd}\r\n\t\t\t{72e39547-7b18-11d1-adef-00c04fd8d5cd}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 4,
+      "description": "Administrator je pročitao atribut sAMAccountName iz objekta User.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+4577}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{bf967aba-0de6-11d0-a285-00aa003049e2}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:USER_ATTRIBUTES}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7684\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x10</Data><Data Name='Properties'>%%7684\r\n\t\t{59ba2f42-79a2-11d0-9020-00c04fc2d3cf}\r\n\t\t\t{3e0abfd0-126a-11d0-a060-00aa006c33ed}\r\n\t{bf967aba-0de6-11d0-a285-00aa003049e2}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 5,
+      "description": "Administrator je izlistao sadržaj objekta Container.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+4610}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{bf967a8b-0de6-11d0-a285-00aa003049e2}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:CONTAINER}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7682\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x4</Data><Data Name='Properties'>%%7682\r\n\t{bf967a8b-0de6-11d0-a285-00aa003049e2}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 6,
+      "description": "Administrator je pročitao distinguishedName (punu LDAP putanju računa) objekta User iz zapisa 4.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+4643}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{bf967aba-0de6-11d0-a285-00aa003049e2}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:USER_ATTRIBUTES}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7684\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x10</Data><Data Name='Properties'>%%7684\r\n\t\t{e48d0154-bcf8-11d1-8702-00c04fb96050}\r\n\t\t\t{bf9679e4-0de6-11d0-a285-00aa003049e2}\r\n\t{bf967aba-0de6-11d0-a285-00aa003049e2}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 7,
+      "description": "Administrator je zatražio replikaciju promjena direktorija (bez osjetljivih podataka kao što je password hash) iz root domene.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+13957}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{19195a5b-6da0-11d0-afd3-00c04fd930c9}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:REPLICATION}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7688\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x100</Data><Data Name='Properties'>%%7688\r\n\t\t{1131f6aa-9c07-11d1-f79f-00c04fc2dcd2}\r\n\t{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 8,
+      "description": "Administrator je zatražio replikaciju promjena direktorija (bez osjetljivih podataka kao što je password hash) iz root domene.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+15101}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{19195a5b-6da0-11d0-afd3-00c04fd930c9}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:REPLICATION}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7688\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x100</Data><Data Name='Properties'>%%7688\r\n\t\t{1131f6aa-9c07-11d1-f79f-00c04fc2dcd2}\r\n\t{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 9,
+      "description": "Administrator je zatražio replikaciju promjena direktorija (svih, uključujući osjetljive podatke kao password hash i ključevi) iz root domene.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+15734}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{19195a5b-6da0-11d0-afd3-00c04fd930c9}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:REPLICATION}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7688\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x100</Data><Data Name='Properties'>%%7688\r\n\t\t{89e95b76-444d-4c62-991a-0facbeda640c}\r\n\t{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 10,
+      "description": "Administrator je zatražio replikaciju promjena direktorija (specifično za Read Only Domain Controller) iz root domene.",
+      "log_source": "XmlWinEventLog:Security",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Security-Auditing' Guid='{54849625-5478-4994-A5BA-3E3B0328C30D}'/><EventID>4662</EventID><Version>0</Version><Level>0</Level><Task>14080</Task><Opcode>0</Opcode><Keywords>0x8020000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+15793}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}</EventRecordID><Correlation ActivityID='{{ACTIVITYID:target}}'/><Execution ProcessID='{{PID:target+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:AUDIT+RAND[100,65532,4]}}'/><Channel>Security</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security/></System><EventData><Data Name='SubjectUserSid'>{{USERSID:target:ADMIN}}</Data><Data Name='SubjectUserName'>{{USERNAME:target:ADMIN}}</Data><Data Name='SubjectDomainName'>{{USERDOMAIN:target}}</Data><Data Name='SubjectLogonId'>{{LOGONID:target}}</Data><Data Name='ObjectServer'>DS</Data><Data Name='ObjectType'>%{19195a5b-6da0-11d0-afd3-00c04fd930c9}</Data><Data Name='ObjectName'>{{OBJECTGUID:target:REPLICATION}}</Data><Data Name='OperationType'>Object Access</Data><Data Name='HandleId'>0x0</Data><Data Name='AccessList'>%%7688\r\n\t\t\t\t</Data><Data Name='AccessMask'>0x100</Data><Data Name='Properties'>%%7688\r\n\t\t{1131f6ad-9c07-11d1-f79f-00c04fc2dcd2}\r\n\t{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n</Data><Data Name='AdditionalInfo'>-</Data><Data Name='AdditionalInfo2'></Data></EventData></Event>"
+    },
+    {
+      "id": 11,
+      "description": "DC je primio i uspješno obradio DCSync replikacijski zahtjev za krbtgt objekt. Zahtjev je poslan s istog DC-a (self-directed), USN je 0 što ukazuje da se radi o alatu a ne legitimnoj replikaciji. bitno je napomenuti da se on stvara nakon prvog replikacijskog zahtjeva (log 7)",
+      "log_source": "WinEventLog:Directory Service",
+      "hostname": "{{COMPUTERNAME:target}}",
+      "raw": "{{TIMESTAMP:US_LOCALE+14529}}\nLogName=Directory Service\nEventCode=1072\nEventType=4\nComputerName={{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}\nUser={{USERDOMAIN:target}}\\{{USERNAME:target:ADMIN}}\nSid={{USERSID:target:ADMIN}}\nSidType=1\nSourceName=Microsoft-Windows-ActiveDirectory_DomainService\nType=Information\nRecordNumber={{EVENTRECORDID:target+GSEQ(WinEventLog:Directory Service)}}\nKeywords=Classic\nTaskCategory=Replication\nOpCode=The operation completed successfully.\nMessage=Internal event: This directory service was prompted by the directory service at the following network address with a request for retrieval of changes for the following directory partition with these options. \r\n \r\nDirectory partition:\r\nCN=krbtgt,CN=Users,DC={{USERDOMAIN:target}},DC={{DOMAINSUFFIX:target}} \r\nNetwork address:\r\n{{DSAGUID:target}} ({{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}) \r\nUpdate sequence number:\r\n0 \r\nFlags:\r\n0x80288030 \r\nSensitivity:\r\n0 \r\nOperation:\r\n6 \r\nDirSync Control Flags:\r\n0x0 \r\nActive GetNC sessions:\r\n1\n"
+    }
+  ],
+  "parameters": [
+    {
+      "name": "ActivityID",
+      "description": "GUID za aktivnost eventa 4662 ovog napada, generira se pri svakoj aktivnosti unutar ovog napada kada se vrši aktivnost nad objektom. Specifican za ovaj napad.",
+      "placeholders": [
+        "{{ACTIVITYID:target}}"
+      ]
+    },
+    {
+      "name": "AuthenticationPackageName",
+      "description": "Naziv autentikacijskog paketa koji je korišten za provjeru vjerodajnica korisnika, primjerice Kerberos, NTLM ili Negotiate. Specifican za ovaj napad.",
+      "placeholders": [
+        "{{AUTHENTICATIONPACKAGENAME:target}}"
+      ]
+    },
+    {
+      "name": "Computer",
+      "description": "Naziv hosta računala koje je generiralo Windows Security događaje. Sastoji se od naziva računala i Active Directory DNS domene, zajedno čini fully qualified domain name (FQDN) domain kontrolera (DC)",
+      "placeholders": [
+        "{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "Directory_partition",
+      "description": "Ime AD objekta (Distinguished Name DN) koji je bio predmet replikacije. CN=krbtgt i CN=Users su fiksni, DC komponente su specifične za okruženje.",
+      "placeholders": [
+        "CN=krbtgt,CN=Users,DC={{USERDOMAIN:target}},DC={{DOMAINSUFFIX:target}}"
+      ]
+    },
+    {
+      "name": "EventRecordID",
+      "description": "Sekvencijalni broj zapisa na Security kanalu (XML export) za napad DCSync. Automatski raste za svaku pojavu unutar scenarija (+GSEQ), počevši od bazne vrijednosti.",
+      "placeholders": [
+        "{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Security)}}"
+      ]
+    },
+    {
+      "name": "IpAddress",
+      "description": "IP adresa računala s kojeg je izvršen pokušaj prijave.",
+      "placeholders": [
+        "{{IPv4:attacker}}"
+      ]
+    },
+    {
+      "name": "IpPort",
+      "description": "Izvorišni port računala s kojeg je izvršen pokušaj prijave.",
+      "placeholders": [
+        "{{SRCPORT:attacker:LOGON_PORT}}"
+      ]
+    },
+    {
+      "name": "KeyLength",
+      "description": "Duljina sigurnosnog ključa NTLM sesije (čak i tada može biti 0). Taj parametar uvijek ima vrijednost 0 ako je „Authentication Package” (paket za autentifikaciju) postavljen na „Kerberos”, jer se ne primjenjuje na protokol Kerberos. Ovo polje također ima vrijednost 0 ako je Kerberos dogovoren pomoću paketa za autentifikaciju „Negotiate”.",
+      "placeholders": [
+        "{{KEYLENGTH:target}}"
+      ]
+    },
+    {
+      "name": "LogonGuid",
+      "description": "GUID generiran pri svakoj prijavi, jedinstveno identificira logon sesiju.",
+      "placeholders": [
+        "{{LOGONGUID:target}}"
+      ]
+    },
+        {
+      "name": "LogonType",
+      "description": "Vrsta prijave prema Windows logon tipu. Vrijednost određuje način na koji je korisnik pristupio sustavu, primjerice mrežna ili udaljena interaktivna prijava, uloga je korisnik koji vrši napad.",
+      "placeholders": [
+        "{{LOGONTYPE:target}}"
+      ]
+    },
+    {
+      "name": "LogonProcessName",
+      "description": "Naziv procesa prijave koji je obradio zahtjev za autentikaciju korisnika, User32, Kerberos, NtLmSsp ili slično.",
+      "placeholders": [
+        "{{LOGONPROCESSNAME:target}}"
+      ]
+    },
+    {
+      "name": "LmPackageName",
+      "description": "Dogovoreni protokol za provjeru autentičnosti ili Security Support Provider (SSP) korišten za pokušaj prijave. Jedino popunjen za NTLM prijavu, inače je - vrijednost.",
+      "placeholders": [
+        "{{LMPACKAGENAME:target}}"
+      ]
+    },
+    {
+      "name": "Network address",
+      "description": "DSAGUID (Directory System Agent na domain kontroleru koji sudjeluje u replikaciji) i FQDN DC-a koji je poslao replikacijski zahtjev. U ovom slučaju isti DC prima i šalje zahtjev što je anomalija tipična za DCSync napad.",
+      "placeholders": [
+        "{{DSAGUID:target}} ({{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}})"
+      ]
+    },
+    {
+      "name": "ObjectName",
+      "description": "GUID objekta kojem se pristupa tijekom replikacije. Različiti zapisi replikacije pristupaju različitim objektima (role prikazuju objekte ili akcije kojim se pristupa).",
+      "placeholders": [
+        "{{OBJECTGUID:target:COMPUTER_ATTRIBUTES}}",
+        "{{OBJECTGUID:target:ORG_UNIT}}",
+        "{{OBJECTGUID:target:USER_ATTRIBUTES}}",
+        "{{OBJECTGUID:target:CONTAINER}}",
+        "{{OBJECTGUID:target:REPLICATION}}"
+      ]
+    },
+    {
+      "name": "ProcessID",
+      "description": "PID odgovoran za stvaranje zapisa dodijeljen od strane OS-a, dinamički dodijeljen za vrijeme izvođenja.",
+      "placeholders": [
+        "{{PID:target+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "RecordNumber",
+      "description": "Sekvencijalni broj zapisa u Directory Service event logu (KV export), ista vrijednost kao EventRecordID no zaseban brojač jer je riječ o drugom log kanalu.",
+      "placeholders": [
+        "{{EVENTRECORDID:target+GSEQ(WinEventLog:Directory Service)}}"
+      ]
+    },
+    {
+      "name": "RestrictedAdminMode",
+      "description": "Popunjava se samo za sesije s vrstom prijave RemoteInteractive (inače je - vrijednost). Ova vrijednost predstavlja oznaku Da/Ne koja pokazuje jesu li navedeni podaci proslijeđeni uporabom načina rada Restricted Admin mode.",
+      "placeholders": [
+        "{{RESTRICTEDADMINMODE:target}}"
+      ]
+    },
+    {
+      "name": "SubjectDomainName",
+      "description": "NetBIOS naziv domene korisničkog računa koji izvršava operaciju. Za REMOTE_LOGIN radi se o korisniku koji je zatražio povezivanje s uređajem (za mrežno povezivanje je -), a za drugi lokalnom korisniku koji izvršava naknadne operacije.",
+      "placeholders": [
+        "{{USERDOMAIN:attacker:REMOTE_LOGIN}}",
+        "{{USERDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "SubjectLogonId",
+      "description": "Heksadecimalni ID logon sesije. Za REMOTE_LOGIN odnosi se na sesiju korisnika koji je zatražio povezivanje s uređajem, a za drugi na lokalnu logon sesiju koja izvršava naknadne operacije.",
+      "placeholders": [
+        "{{LOGONID:attacker:REMOTE_LOGIN}}",
+        "{{LOGONID:target}}"
+      ]
+    },
+    {
+      "name": "SubjectUserName",
+      "description": "Naziv korisničkog računa koji izvršava operaciju. Za REMOTE_LOGIN radi se o korisniku koji je zatražio povezivanje s uređajem, a za ADMIN o lokalnom korisničkom administrativnom računu koji izvršava naknadne operacije.",
+      "placeholders": [
+        "{{USERNAME:attacker:REMOTE_LOGIN}}",
+        "{{USERNAME:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "SubjectUserSid",
+      "description": "SID korisničkog računa koji izvršava operaciju. Za REMOTE_LOGIN radi se o korisniku koji je zatražio povezivanje s uređajem, a za ADMIN o lokalnom korisničkom administrativnom računu koji izvršava naknadne operacije.",
+      "placeholders": [
+        "{{USERSID:attacker:REMOTE_LOGIN}}",
+        "{{USERSID:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "SystemTime",
+      "description": "Vrijeme stvaranja log zapisa u formatu SystemTime. Bazno vrijeme je TIMESTAMP (log 0), svaki sljedeći zapis dodaje literalni offset u mikrosekundama.",
+      "placeholders": [
+        "{{TIMESTAMP:SYSTEMTIME}}",
+        "{{TIMESTAMP:SYSTEMTIME+OFFSET}}"
+      ]
+    },
+    {
+      "name": "Sid",
+      "description":"Sid sigurnosnog subjekta povezanog s događajem 1072 na DC.",
+      "placeholders": [
+        "{{USERSID:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "TargetDomainName",
+      "description": "FQDN naziv domene (s .LOCAL sufiksom), koristi se u log 0.",
+      "placeholders": [
+        "{{USERDNSDOMAIN:target}}"
+      ]
+    },
+    {
+      "name": "TargetLogonId",
+      "description": "Hexadecimalni ID logon sesije kreiran pri prijavi. Isti ID koristi se kao SubjectLogonId u svim naknadnim 4662 događajima.",
+      "placeholders": [
+        "{{LOGONID:target}}"
+      ]
+    },
+    {
+      "name": "TargetOutboundUserName",
+      "description": "Korisničko ime koje se koristi za odlazne (mrežne) veze. Vrijedi samo za vrstu prijave NewCredentials, inače je vrijednost -.",
+      "placeholders": [
+        "{{USERNAME:target:NEWCREDENTIALS_LOGON}}"
+      ]
+    },
+    {
+      "name": "TargetOutboundDomainName",
+      "description": "Domena korisnika koji se koristi za odlazne (mrežne) veze. Vrijedi samo za vrstu prijave NewCredentials, inače je vrijednost -.",
+      "placeholders": [
+        "{{USERDOMAIN:target:NEWCREDENTIALS_LOGON}}"
+      ]
+    },
+    {
+      "name": "TargetLinkedLogonId",
+      "description": "Heksadekadska vrijednost druge uparene sesije prijave. Ako s ovom sesijom prijave nije povezana nijedna druga sesija prijave, vrijednost je 0x0.",
+      "placeholders": [
+        "{{LINKEDLOGONID:target}}"
+      ]
+    },
+    {
+      "name": "TargetUserName",
+      "description": "Naziv korisničkog računa za koji je izvršena prijava, podudara se sa SubjectUserName lokalnim korisnikom (4662 događaji).",
+      "placeholders": [
+        "{{USERNAME:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "TargetUserSid",
+      "description": "SID ciljnog korisnika u formatu DOMENA\\Korisnik, složen iz USERDOMAIN i USERNAME.",
+      "placeholders": [
+        "{{USERDOMAIN:target}}\\{{USERNAME:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "ThreadID",
+      "description": "OS-assigned thread identifier. Log 0 koristi LOGON (thread procesa prijave), logovi 1-10 koriste AUDIT (nasumično generirani u rasponu, svaki ThreadId različite role dobiva vlastitu vrijednost).",
+      "placeholders": [
+        "{{THREADID:target:LOGON+RAND[100,65532,4]}}",
+        "{{THREADID:target:AUDIT+RAND[100,65532,4]}}"
+      ]
+    },
+    {
+      "name": "TransmittedServices",
+      "description": "Podaci o prenesenim uslugama popunjavaju se ako je prijava rezultat postupka prijave S4U (Service For User). S4U je Microsoftova nadogradnja protokola Kerberos koja omogućuje aplikaciji pribavljanje Kerberos service ticket-a u ime korisnika, što najčešće čini web-stranica (front-end) radi pristupa internom resursu u ime korisnika. Ako nije S4U onda - vrijednost",
+      "placeholders": [
+        "{{TRANSMITTEDSERVICES:target}}"
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Naziv sigurnosnog subjekta povezanog s događajem 1072 na DC.",
+      "placeholders": [
+        "{{USERDOMAIN:target}}\\{{USERNAME:target:ADMIN}}"
+      ]
+    },
+    {
+      "name": "VirtualAccount",
+      "description": "Oznaka „Da” (%%1844) ili „Ne” (%%1843) koja pokazuje je li riječ o virtualnom računu (na primjer *Managed Service Account*); koristi se za prepoznavanje računa koji određena usluga upotrebljava, umjesto da se koristi samo „NetworkService”. Virtualni se računi pojavljuju isključivo kod vrtsa prijave Service (vrsta 5), ​​kada sustav Windows pokreće sesiju prijave povezanu s pokretanjem usluge (inače je uvijek Ne, %%1843).",
+      "placeholders": [
+        "{{VIRTUALACCOUNT:target}}"
+      ]
+    },
+    {
+      "name": "WinEventLogTime",
+      "description": "Vrijeme stvaranja log zapisa u Directory Service (KV export) logu u formatu US locale.",
+      "placeholders": [
+        "{{TIMESTAMP:US_LOCALE+OFFSET}}"
+      ]
+    },
+    {
+      "name": "WorkstationName",
+      "description": "Naziv radne stanice s koje je pokrenuta prijava. Ako naziv nije dostupan, Windows događaj može sadržavati vrijednost '-'.",
+      "placeholders": [
+        "{{COMPUTERNAME:attacker}}"
+      ]
+    }
+  ]
+}

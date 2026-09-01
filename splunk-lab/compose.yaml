@@ -1,0 +1,29 @@
+services:
+  splunk:
+    build:
+      context: ./splunk
+      dockerfile: Dockerfile
+    container_name: splunk
+    user: root
+    ports:
+      - "8000:8000"
+      - "8088:8088"
+      - "9997:9997"
+    environment:
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_PASSWORD: "Splunk123!"
+      SPLUNK_GENERAL_TERMS: "--accept-sgt-current-at-splunk-com"
+      SPLUNK_ENABLE_LISTEN: "9997"
+      SPLUNK_ENABLE_HEC: "true"
+      SPLUNK_HEC_TOKEN: "mysplunktoken123"
+
+  attacker:
+    build:
+      context: ./attacker
+      dockerfile: Dockerfile
+    container_name: kali-attacker
+    stdin_open: true
+    tty: true
+    environment:
+      SPLUNK_HOST: splunk
+      SPLUNK_HEC_TOKEN: "mysplunktoken123"
