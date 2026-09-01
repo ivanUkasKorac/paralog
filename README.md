@@ -38,6 +38,9 @@ splunk-lab/
 
 ## 2. Postavljanje i pokretanje Dockera
 
+Prije početka potrebno je ulogirati se u Splunk (admin:Splunk123!) i dodati index:
+•	Settings -> indexes -> New Index -> Name:test (ili drugačije ako se šalje na drugi index) -> Save
+
 Iz direktorija `splunk-lab`:
 
 ```bash
@@ -81,6 +84,18 @@ U konfiguraciji laboratorija koriste se i:
 8088  - HEC
 9997  - Splunk receiver (nije potreban)
 ```
+
+Za provjeru ispravnog rada HEC-a:
+
+```bash
+curl -k https://localhost:8088/services/collector/event \
+-H "Authorization: Splunk mysplunktoken123" \
+-H "Content-Type: application/json" \
+-d '{"event": "Hello Splunk from Docker!"}'
+```
+
+Očekivani rezultat je Success. Možda je potrebno nekoliko minuta dok se ne pokrene.
+
 
 ### Zaustavljanje laboratorija
 
