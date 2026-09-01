@@ -266,10 +266,19 @@ Zatim se logovi mogu pregledati u Splunku, primjerice:
 ```spl
 index=test
 ```
-
 ---
 
 ## Korisne napomene
 
 - Kod `docker-compose exec` koristi se naziv servisa `attacker`, a ne `container_name` `kali-attacker`.
 - `.yml` i pripadajuće `.log` datoteke moraju ostati zajedno u istom direktoriju tijekom replaya.
+
+
+## 6. Opis napada iz primjera
+
+1. Napadač se korištenjem crackmapexec alata credential stuffingom (pogađanje vrijednosti username/password) pokušava prijaviti na sustav, uspijeva mu to za PC1
+2. Napadač se spaja RDP protokolom pomoću pogođenih vjerodajnica
+3. Koristi Powershell za skidanje maliciozne datoteke.
+4. Pokreće datoteku koja mu daje administrativna prava na uređaju, pomoću toga u datotekama s administrativnim pristupom nalazi domenske kredencijale.
+5. Opet koristeći crackmapexec s modulom za mimikatz se prijavljuje administrativnim kredencijalima i vrši DCSync na DC-u.
+   
