@@ -180,6 +180,8 @@ Ako generator ne može razriješiti neki placeholder ili nedostaje potrebna vrij
 
 `run_replays.py` služi za automatsko slanje svih generiranih datasetova u Splunk koristeci replay.py od attack data.
 
+Potrebno je unzip-ati logove generirane iz paraloga (trebaju biti zajedno) i postaviti u datoteku, putanja datoteke je drugi argument.
+
 Skripta pronalazi sve `.yml` datoteke u direktoriju scenarija i za svaku pokreće Splunkov:
 
 ```text
@@ -195,10 +197,7 @@ python3 run_replays.py <path_to_replay.py> <scenario_dir> [--index INDEX]
 Primjer unutar Kali kontejnera:
 
 ```bash
-python3 run_replays.py \
-    /opt/attack_data/bin/replay.py \
-    /root/attack_scenario \
-    --index test
+python3 run_replays.py /opt/attack_data/bin/replay.py /root/attack_scenario --index test
 ```
 
 Ako se `--index` ne navede, koristi se:
