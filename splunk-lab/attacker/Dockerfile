@@ -31,7 +31,7 @@ RUN git clone https://github.com/splunk/security_content.git
 
 # Preuzimanje paralog generatora i skripte za slanje zapisa
 RUN git clone --filter=blob:none --no-checkout https://github.com/ivanUkasKorac/paralog.git paralog && \
-    cd thesis-repo && \
+    cd paralog && \
     git sparse-checkout init --cone && \
     git sparse-checkout set data && \
     git checkout
