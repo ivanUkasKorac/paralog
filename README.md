@@ -180,6 +180,8 @@ Ako generator ne može razriješiti neki placeholder ili nedostaje potrebna vrij
 
 `run_replays.py` služi za automatsko slanje svih generiranih datasetova u Splunk koristeci replay.py od attack data.
 
+Potrebno je unzip-ati logove generirane iz paraloga (trebaju biti zajedno) i postaviti u datoteku, putanja datoteke je drugi argument.
+
 Skripta pronalazi sve `.yml` datoteke u direktoriju scenarija i za svaku pokreće Splunkov:
 
 ```text
@@ -195,10 +197,7 @@ python3 run_replays.py <path_to_replay.py> <scenario_dir> [--index INDEX]
 Primjer unutar Kali kontejnera:
 
 ```bash
-python3 run_replays.py \
-    /opt/attack_data/bin/replay.py \
-    /root/attack_scenario \
-    --index test
+python3 run_replays.py /opt/attack_data/bin/replay.py /root/attack_scenario --index test
 ```
 
 Ako se `--index` ne navede, koristi se:
@@ -267,10 +266,19 @@ Zatim se logovi mogu pregledati u Splunku, primjerice:
 ```spl
 index=test
 ```
-
 ---
 
 ## Korisne napomene
 
 - Kod `docker-compose exec` koristi se naziv servisa `attacker`, a ne `container_name` `kali-attacker`.
 - `.yml` i pripadajuće `.log` datoteke moraju ostati zajedno u istom direktoriju tijekom replaya.
+
+
+## 6. Opis napada iz primjera
+
+1. Napadač se korištenjem crackmapexec alata credential stuffingom (pogađanje vrijednosti username/password) pokušava prijaviti na sustav, uspijeva mu to za PC1
+2. Napadač se spaja RDP protokolom pomoću pogođenih vjerodajnica
+3. Koristi Powershell za skidanje maliciozne datoteke.
+4. Pokreće datoteku koja mu daje administrativna prava na uređaju, pomoću toga u datotekama s administrativnim pristupom nalazi domenske kredencijale.
+5. Opet koristeći crackmapexec s modulom za mimikatz se prijavljuje administrativnim kredencijalima i vrši DCSync na DC-u.
+   
