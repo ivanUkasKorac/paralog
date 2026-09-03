@@ -18,7 +18,7 @@
         "description": "Sysmon događaj 11 na ciljanom računalu: stvaranje ETL log Cloud datoteke od strane sumnjive izvršne datoteke (REDSUN), manipulacija Cloud API-em jer se time obnavlja exploit unutar Systen32 direktorija.",
         "log_source": "XmlWinEventLog:Microsoft-Windows-Sysmon/Operational",
         "hostname": "{{COMPUTERNAME:target}}",
-        "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>11</EventID><Version>2</Version><Level>4</Level><Task>11</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+158416}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>{{RULENAME:target:REDSUN}}</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:REDSUN}}</Data><Data Name='ProcessId'>{{PID:target:REDSUN+RAND[100,65532,4]}}</Data><Data Name='Image'>{{DIRECTORY:target:BINARY}}{{FILENAME:target:EXPLOIT}}</Data><Data Name='TargetFilename'>C:\\Windows\\System32\\LogFiles\\CloudFiles\\CldFlt0.etl</Data><Data Name='CreationUtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='User'>{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}</Data></EventData></Event>"
+        "raw": "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Microsoft-Windows-Sysmon' Guid='{5770385F-C22A-43E0-BF4C-06F5698FFBD9}'/><EventID>11</EventID><Version>2</Version><Level>4</Level><Task>11</Task><Opcode>0</Opcode><Keywords>0x8000000000000000</Keywords><TimeCreated SystemTime='{{TIMESTAMP:SYSTEMTIME+158416}}'/><EventRecordID>{{EVENTRECORDID:target+GSEQ(XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)}}</EventRecordID><Correlation/><Execution ProcessID='{{PID:target:EVENT_PID+RAND[100,65532,4]}}' ThreadID='{{THREADID:target:EVENT_TID+RAND[100,65532,4]}}'/><Channel>Microsoft-Windows-Sysmon/Operational</Channel><Computer>{{COMPUTERNAME:target}}.{{USERDNSDOMAIN:target}}</Computer><Security UserID='S-1-5-18'/></System><EventData><Data Name='RuleName'>{{RULENAME:target:REDSUN}}</Data><Data Name='UtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='ProcessGuid'>{{PROCESSGUID:target:REDSUN}}</Data><Data Name='ProcessId'>{{PID:target:REDSUN+RAND[100,65532,4]}}</Data><Data Name='Image'>{{DIRECTORY:target:BINARY}}{{FILENAME:target:EXPLOIT}}</Data><Data Name='TargetFilename'>C:\\Windows\\System32\\LogFiles\\CloudFiles\\CldFlt0.etl</Data><Data Name='CreationUtcTime'>{{TIMESTAMP:UTCTIME+110000}}</Data><Data Name='User'>{{USERDOMAIN:target}}\\{{USERNAME:target}}</Data></EventData></Event>"
     },
     {
         "id": 2,
@@ -198,7 +198,7 @@
       "name": "User",
       "description": "Korisnički račun pod kojim je proces pokrenut. (Radi se o lokalnom računu)",
       "placeholders": [
-        "{{USERDOMAIN:target}}\\{{USERNAME:target:LOCAL}}"
+        "{{USERDOMAIN:target}}\\{{USERNAME:target}}"
       ]
     }
   ]
